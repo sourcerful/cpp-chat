@@ -1,10 +1,16 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
 #include <WinSock2.h>
 #include "server.h"
 #include <thread>
+#include <ws2tcpip.h>
+#include <mutex>
 
 using namespace std;
 
+mutex m;
 static bool SUCCESS_con = false;
 
 Server::Server(int port)
@@ -45,17 +51,19 @@ Server::Server(int port)
 }
 void Server::accept_con()
 {
+    sockaddr_in client_addr;
+    int clientSize;
+
     while (true)
     {
-        
-        int con_size = sizeof(addr);
-        connection_s = accept(listening_s, (sockaddr*)&addr, &con_size); //puts the client info into addr.
-        cout << "Connection from "; 
+        clientSize = sizeof(client_addr);
+        connection_s = accept(listening_s, (sockaddr*)&client_addr, &clientSize); //puts the client info into addr.
+        cout << "Connection from " << "(" << inet_ntoa(client_addr.sin_addr) << " , " << ntohs(client_addr.sin_port) << ")"; 
         add_client(connection_s);
 
         if (connection_s != INVALID_SOCKET)
             break;  
-        thread t1(&Server::recieve_messages, this); //calling object methods requires pointer to member
+        thread t1(&Server::recieve_messages, this, ref(connection_s)); //calling object methods requires pointer to member
                                                       //and the object itself, the third is the parameters but
                                                       //there are none.
     }
@@ -64,25 +72,34 @@ void Server::add_client(SOCKET &client)
 {
     clients.push_back(client);
 }
-void Server::recieve_messages(SOCKET client)
+void Server::recieve_messages(SOCKET &client)
 {
     if(!SUCCESS_con)
     {
-        strcpy(data, "server connected...\n");
+        strcpy_s(data, "Connection established.\n");
         cout << "server is running." << endl;
         SUCCESS_con = true;
     }
 
+    send(client, data, BUFF_SIZE, 0);
+
     while (true)
     {
-        send(clients[0], data, BUFF_SIZE, 0);
-
-        if (recv(clients[0], data, BUFF_SIZE, 0) == 0)
+        m.lock();
+        if (recv(client, data, BUFF_SIZE, 0) == 0)
             break;
         if (*data == '*')
             break;
-
-        cin.getline(data, BUFF_SIZE);
+        broadcast_message(client);
+        m.unlock();
+    }
+    close();
+}
+void Server::broadcast_message(SOCKET& client)
+{
+    for (auto c : clients)
+    {
+        send(client, data, BUFF_SIZE, 0);
     }
 }
 void Server::close()

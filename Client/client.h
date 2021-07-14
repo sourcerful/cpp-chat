@@ -12,6 +12,7 @@ class Client
 public:
     SOCKET client_socket;
     char data[BUFF_SIZE];
+    char name[BUFF_SIZE];
     char* ip; //loopback addr = "127.0.0.1"
 private:
     int port;
@@ -20,5 +21,8 @@ private:
 public:
     Client(const char* ip_addr);
     int connect_socket();
+    void start_chat();
+    void incoming_messages();
+    void send_messages();
     void close();
 };

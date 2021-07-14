@@ -22,7 +22,8 @@ private:
 public:
     Server(int port = 1234);
     void accept_con();
-    void recieve_messages(SOCKET client);
+    void recieve_messages(SOCKET &client);
     void add_client(SOCKET &client);
+    void broadcast_message(SOCKET &client);
     void close();
 };

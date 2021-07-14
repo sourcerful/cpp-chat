@@ -15,20 +15,8 @@ int main()
         exit(1);
     }
     cout << "connection established." << endl;
+    client.start_chat();
 
-    while (true)
-    {
-        if (recv(client.client_socket, client.data, BUFF_SIZE, 0) == 0)
-            break; 
-
-        cout << "Server: " << client.data << endl;
-        cout << "Client: ";
-        cin.getline(client.data, BUFF_SIZE);
-
-        send(client.client_socket, client.data, BUFF_SIZE, 0);
-        if (*client.data == '*')
-            break;
-    }
     cout << "Connection terminated." << endl;
     client.close();
 

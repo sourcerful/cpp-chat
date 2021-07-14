@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <iostream>
 #include <WinSock2.h>
 #include "server.h"
@@ -13,8 +14,11 @@ int main()
     Server server(5555);
     server.accept_con();
 
+    cout << endl;
+    cout << "Connection terminated.\n";
     strcpy(server.data, "Connection terminated.\n");
-    send(server.clients[0], server.data, BUFF_SIZE, 0);
+    for(auto s: server.clients)
+        send(s, server.data, BUFF_SIZE, 0);
     server.close();
 
     return 0;
