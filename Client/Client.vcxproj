@@ -139,7 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="client.h" />
+    <ClInclude Include="client.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client.cpp" />

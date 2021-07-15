@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="client.h">
+    <ClInclude Include="client.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

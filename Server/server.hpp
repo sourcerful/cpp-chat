@@ -21,9 +21,11 @@ private:
     sockaddr_in addr; //socket address input.
 public:
     Server(int port = 1234);
+    ~Server();
     void accept_con();
     void recieve_messages(SOCKET &client);
     void add_client(SOCKET &client);
     void broadcast_message(SOCKET &client);
+private:
     void close();
 };

@@ -6,12 +6,10 @@
 #include <stdio.h>
 #include <WinSock2.h>
 #include <thread>
-#include "client.h"
-#include <mutex>
+#include "client.hpp"
 
 using namespace std;
 
-mutex m;
 static bool SUCCESS_con = false;
 
 Client::Client(const char* ip_addr)
@@ -43,6 +41,10 @@ Client::Client(const char* ip_addr)
     cout << "Client socket created." << endl;
 
 }
+Client::~Client()
+{
+    close();
+}
 void Client::start_chat()
 {
     thread t1(&Client::incoming_messages, this);
@@ -62,14 +64,11 @@ void Client::incoming_messages()
         }
         SUCCESS_con = true;
     }
-    cout << "Server: " << data << endl;
 
-    m.lock();
     while (true)
     {
         recv(client_socket, data, BUFF_SIZE, 0);
         cout << data << endl;
-        m.unlock();
     }   
 }
 void Client::send_messages()
@@ -78,14 +77,13 @@ void Client::send_messages()
     strcpy(temp, name);
     while (true)
     {
-        m.lock();
+        cout << name;
         cin.getline(data, BUFF_SIZE);
         if (*data == '*')
             break;
         strcat(temp, data);
         send(client_socket, temp, BUFF_SIZE, 0);
         strcpy(temp, name);
-        m.unlock();
     }
     close();
 }

@@ -20,6 +20,7 @@ private:
     sockaddr_in addr; //socket address input.
 public:
     Client(const char* ip_addr);
+    ~Client();
     int connect_socket();
     void start_chat();
     void incoming_messages();

@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <WinSock2.h>
-#include "server.h"
+#include "server.hpp"
 #include <thread>
 
 #pragma comment (lib, "ws2_32.lib") //including the library to the LINKER settings.
@@ -19,7 +19,6 @@ int main()
     strcpy(server.data, "Connection terminated.\n");
     for(auto s: server.clients)
         send(s, server.data, BUFF_SIZE, 0);
-    server.close();
 
     return 0;
 }
