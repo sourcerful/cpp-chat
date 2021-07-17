@@ -1,21 +1,13 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <WinSock2.h>
 #include "server.hpp"
-#include <thread>
-#include <ws2tcpip.h>
 #include <mutex>
 
 using namespace std;
 
-static bool SUCCESS_con = false;
 mutex m;
 
 Server::Server(int port)
 {
-    memset(data, 0, BUFF_SIZE);
     this->port = port;
     
     //init winsock, WSA variables - environment supporting socket programming on windows.
@@ -47,7 +39,7 @@ Server::Server(int port)
     }
     //tell winsock the socket is for listening
     listen(listening_s, SOMAXCONN); // the socket is for listening, being able to listen to maximum amount.
-    cout << "Listening..." << endl;
+    cout << "Listening to incoming connections." << endl;
 }
 void Server::accept_con()
 {
@@ -59,52 +51,48 @@ void Server::accept_con()
         clientSize = sizeof(client_addr);
         connection_s = accept(listening_s, (sockaddr*)&client_addr, &clientSize); //puts the client info into addr.
         cout << "Connection from " << "(" << inet_ntoa(client_addr.sin_addr) << " , " << ntohs(client_addr.sin_port) << ")" << endl; 
+        
         add_client(connection_s);
 
         if (connection_s == INVALID_SOCKET)
             break;
         
-        thread t1(&Server::recieve_messages, this, ref(connection_s)); //calling object methods requires pointer to member
+        threads.push_back(thread(&Server::recieve_messages, this, connection_s)); //calling object methods requires pointer to member
                                                       //and the object itself, the third is the parameters but
                                                       //there are none.
     }
 }
-void Server::add_client(SOCKET &client)
+void Server::add_client(SOCKET client)
 {   
     clients.push_back(client);
 }
-void Server::recieve_messages(SOCKET &client)
+void Server::recieve_messages(SOCKET client)
 {
-    if(!SUCCESS_con)
-    {
-        strcpy_s(data, "Connection established.\n");
-        cout << "server is running." << endl;
-        SUCCESS_con = true;
-    }
-
-    send(client, data, BUFF_SIZE, 0);
+    char local_data[BUFF_SIZE];
+    memset(local_data, 0, BUFF_SIZE);
 
     while (true)
     {
-        std::lock_guard<mutex> lock_guard(m);
-        if (recv(client, data, BUFF_SIZE, 0) <= 0)
+        if (recv(client, local_data, BUFF_SIZE, 0) <= 0)
             break;
-        if (*data == '*')
+        cout << "message recieved: " << local_data << endl;
+        if (*local_data == '*')
             break;
-        broadcast_message(client);
+        broadcast_message(client, local_data);
+        ZeroMemory(local_data, BUFF_SIZE);
     }
-    close();
 }
 Server::~Server()
 {
     close();
-    exit(1);
 }
-void Server::broadcast_message(SOCKET& client)
+void Server::broadcast_message(SOCKET& client, char* data)
 {
+    std::lock_guard<mutex> lock_guard(m);
     for (auto c : clients)
     {
-        send(c, data, BUFF_SIZE, 0);
+        if (c != client)
+            send(c, data, BUFF_SIZE, 0);
     }
 }
 void Server::close()

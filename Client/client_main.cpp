@@ -18,7 +18,6 @@ int main()
     client.start_chat();
 
     cout << "Connection terminated." << endl;
-    client.close();
 
     return 0;
 }

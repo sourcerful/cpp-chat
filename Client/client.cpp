@@ -1,16 +1,10 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
- #define _CRT_SECURE_NO_WARNINGS
-#pragma once
-#include <iostream>
-#include <string>
-#include <stdio.h>
-#include <WinSock2.h>
-#include <thread>
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "client.hpp"
+#include <thread>
 
 using namespace std;
-
-static bool SUCCESS_con = false;
 
 Client::Client(const char* ip_addr)
 {
@@ -39,7 +33,6 @@ Client::Client(const char* ip_addr)
         exit(1);
     }
     cout << "Client socket created." << endl;
-
 }
 Client::~Client()
 {
@@ -47,41 +40,36 @@ Client::~Client()
 }
 void Client::start_chat()
 {
-    thread t1(&Client::incoming_messages, this);
-    thread t2(&Client::send_messages, this);
+    thread t1(&Client::send_messages, this);
+    thread t2(&Client::incoming_messages, this);
 
     t1.join();
     t2.join();
 }
 void Client::incoming_messages()
 {
-    if (!SUCCESS_con)
-    {
-        if (recv(client_socket, data, BUFF_SIZE, 0) == 0)
-        {
-            close();
-            exit(1);
-        }
-        SUCCESS_con = true;
-    }
-
     while (true)
     {
         recv(client_socket, data, BUFF_SIZE, 0);
         cout << data << endl;
-    }   
+    }
 }
 void Client::send_messages()
 {
+    bool running = true;
     char temp[BUFF_SIZE];
     strcpy(temp, name);
-    while (true)
+    while (running)
     {
         cout << name;
         cin.getline(data, BUFF_SIZE);
         if (*data == '*')
-            break;
-        strcat(temp, data);
+        {
+            strcat(temp, "*Closing the socket*");
+            running = false;
+        }
+        else
+            strcat(temp, data);
         send(client_socket, temp, BUFF_SIZE, 0);
         strcpy(temp, name);
     }
