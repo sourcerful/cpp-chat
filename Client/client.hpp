@@ -18,6 +18,7 @@ private:
     char data[BUFF_SIZE];
     char name[BUFF_SIZE];
     char* ip; //loopback addr = "127.0.0.1"
+    bool sExit = false;
 public:
     Client(const char* ip_addr);
     ~Client();

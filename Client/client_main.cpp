@@ -12,10 +12,12 @@ int main()
     if (client.connect_socket() == -1)
     {
         cout << "connection failed.";
-        exit(1);
     }
-    cout << "connection established." << endl;
-    client.start_chat();
+    else
+    {
+        cout << "connection established." << endl;
+        client.start_chat();
+    }
 
     cout << "Connection terminated." << endl;
 

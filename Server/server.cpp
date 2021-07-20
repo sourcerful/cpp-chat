@@ -57,26 +57,26 @@ void Server::accept_con()
         if (connection_s == INVALID_SOCKET)
             break;
         
-        threads.push_back(thread(&Server::recieve_messages, this, connection_s)); //calling object methods requires pointer to member
-                                                      //and the object itself, the third is the parameters but
-                                                      //there are none.
+        threads.emplace_back(thread(&Server::recieve_messages, this, connection_s)); //and the object itself, the third is the parameters but
+                                                                              //there are none.
+        threads.back().detach();
     }
 }
 void Server::add_client(SOCKET client)
 {   
-    clients.push_back(client);
+    clients.emplace_back(client); //emplace back
 }
 void Server::recieve_messages(SOCKET client)
 {
     char local_data[BUFF_SIZE];
-    memset(local_data, 0, BUFF_SIZE);
+    ZeroMemory(local_data, BUFF_SIZE);
 
     while (true)
     {
         if (recv(client, local_data, BUFF_SIZE, 0) <= 0)
             break;
         cout << "message recieved: " << local_data << endl;
-        if (*local_data == '*')
+        if (strstr(local_data, "/exit"))
             break;
         broadcast_message(client, local_data);
         ZeroMemory(local_data, BUFF_SIZE);
@@ -92,7 +92,23 @@ void Server::broadcast_message(SOCKET& client, char* data)
     for (auto c : clients)
     {
         if (c != client)
-            send(c, data, BUFF_SIZE, 0);
+            send(c, data, BUFF_SIZE, 0); //instead of clients[i], use clients.at()
+    }
+}
+void KeyListener(Server &s)
+{
+    const int ESC = 27;
+    while (true)
+    {
+        if (_kbhit())
+        {
+            if (_getch() == ESC)
+            {
+                s.~Server();
+                break;
+            }
+        }
+            
     }
 }
 void Server::close()

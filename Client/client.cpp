@@ -50,8 +50,13 @@ void Client::incoming_messages()
 {
     while (true)
     {
-        recv(client_socket, data, BUFF_SIZE, 0);
-        cout << data << endl;
+        if (sExit || recv(client_socket, data, BUFF_SIZE, 0) < 0)
+        {
+            sExit = true;
+            break;
+        }
+        cout << endl << data << endl;
+        cout << name;
     }
 }
 void Client::send_messages()
@@ -59,17 +64,22 @@ void Client::send_messages()
     bool running = true;
     char temp[BUFF_SIZE];
     strcpy(temp, name);
+    
     while (running)
     {
         cout << name;
-        cin.getline(data, BUFF_SIZE);
-        if (*data == '*')
+        if (!sExit)
+            cin.getline(data, BUFF_SIZE);
+        if (strcmp(data, "/exit") == 0)
         {
             strcat(temp, "*Closing the socket*");
             running = false;
+            sExit = true;
         }
         else
             strcat(temp, data);
+        if (sExit && running)
+            break;
         send(client_socket, temp, BUFF_SIZE, 0);
         strcpy(temp, name);
     }

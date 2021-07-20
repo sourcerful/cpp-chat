@@ -7,10 +7,14 @@ using namespace std;
 int main()
 {
     Server server(5555);
+    thread t(KeyListener, ref(server));
     server.accept_con();
+
+    t.join();
 
     cout << endl;
     cout << "Connection terminated.\n";
+
 
     return 0;
 }

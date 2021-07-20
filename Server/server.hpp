@@ -4,6 +4,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <conio.h>
 #include <vector>
 #include <WinSock2.h>
 #include <Windows.h>
@@ -23,6 +24,8 @@ private:
     SOCKET connection_s; //connection to client
     std::vector<SOCKET> clients;
     std::vector<std::thread> threads;
+private: // to differ from the attributes.
+    void close(); 
 public:
     Server(int port = 1234);
     ~Server();
@@ -30,6 +33,6 @@ public:
     void recieve_messages(SOCKET client);
     void add_client(SOCKET client);
     void broadcast_message(SOCKET &client, char *data);
-private:
-    void close();
 };
+
+void KeyListener(Server&);
