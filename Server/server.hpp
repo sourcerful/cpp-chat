@@ -24,6 +24,7 @@ private:
     SOCKET connection_s; //connection to client
     std::vector<SOCKET> clients;
     std::vector<std::thread> threads;
+    //std::vector(ClientInfo) clients;
 private: // to differ from the attributes.
     void close(); 
 public:
@@ -32,7 +33,15 @@ public:
     void accept_con();
     void recieve_messages(SOCKET client);
     void add_client(SOCKET client);
+    //void private_message();
     void broadcast_message(SOCKET &client, char *data);
+};
+
+struct ClientInfo
+{
+    SOCKET con;
+    std::thread t;
+    char* name;
 };
 
 void KeyListener(Server&);

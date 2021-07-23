@@ -6,16 +6,10 @@
 
 using namespace std;
 
+bool sending = false;
+
 Client::Client(const char* ip_addr)
 {
-    ip = new char[sizeof(ip_addr)];
-    strcpy(this->ip, ip_addr);
-    memset(data, 0, BUFF_SIZE);
-    port = 5555;
-    cout << "Enter username: ";
-    cin.getline(name, BUFF_SIZE);
-    strcat(name, ": ");
-
     //init winsock, WSA variables - environment supporting socket programming on windows.
     WORD version = MAKEWORD(2, 2); //version 2.2
     int validws = WSAStartup(version, &wsData);
@@ -25,6 +19,14 @@ Client::Client(const char* ip_addr)
         cerr << "Couldn't initialize winsock" << endl;
         exit(1);
     }
+
+    ip = new char[sizeof(ip_addr)];
+    strcpy(this->ip, ip_addr);
+    ZeroMemory(data, BUFF_SIZE);
+    port = 10319;
+    cout << "Enter username: ";
+    cin.getline(name, BUFF_SIZE);
+    strcat(name, ": "); 
 
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == INVALID_SOCKET)
@@ -55,7 +57,11 @@ void Client::incoming_messages()
             sExit = true;
             break;
         }
-        cout << endl << data << endl;
+        
+        cout << "\r";
+        for (int i = 0; i < 80; i++)
+            cout << " ";
+        cout << "\r" << data << endl;
         cout << name;
     }
 }

@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    Server server(5555);
+    Server server(10319);
     thread t(KeyListener, ref(server));
     server.accept_con();
 

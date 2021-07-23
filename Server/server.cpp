@@ -1,4 +1,5 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "server.hpp"
 #include <mutex>
 
@@ -76,9 +77,18 @@ void Server::recieve_messages(SOCKET client)
         if (recv(client, local_data, BUFF_SIZE, 0) <= 0)
             break;
         cout << "message recieved: " << local_data << endl;
+ 
         if (strstr(local_data, "/exit"))
             break;
-        broadcast_message(client, local_data);
+        /*if (strstr(local_data, "/w") != NULL)
+        {
+
+        }
+        */
+        else
+        {
+            broadcast_message(client, local_data);
+        }
         ZeroMemory(local_data, BUFF_SIZE);
     }
 }
@@ -86,6 +96,7 @@ Server::~Server()
 {
     close();
 }
+
 void Server::broadcast_message(SOCKET& client, char* data)
 {
     std::lock_guard<mutex> lock_guard(m);
