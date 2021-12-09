@@ -23,7 +23,7 @@ Client::Client(const char* ip_addr)
     ip = new char[sizeof(ip_addr)];
     strcpy(this->ip, ip_addr);
     ZeroMemory(data, BUFF_SIZE);
-    port = 10319;
+    port = 5100;
     cout << "Enter username: ";
     cin.getline(name, BUFF_SIZE);
     strcat(name, ": "); 
@@ -42,9 +42,10 @@ Client::~Client()
 }
 void Client::start_chat()
 {
+
     thread t1(&Client::send_messages, this);
     thread t2(&Client::incoming_messages, this);
-
+    
     t1.join();
     t2.join();
 }

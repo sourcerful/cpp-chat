@@ -3,9 +3,7 @@
 #include "server.hpp"
 #include <mutex>
 
-using namespace std;
-
-mutex m;
+std::mutex m;
 
 Server::Server(int port)
 {
@@ -16,7 +14,7 @@ Server::Server(int port)
     int validws = WSAStartup(version, &wsData);     
     if (validws != 0) //check if works
     {
-        cerr << "Couldn't initialize winsock" << endl;
+        std::cerr << "Couldn't initialize winsock" << std::endl;
         exit(1);
     }
 
@@ -30,17 +28,17 @@ Server::Server(int port)
 
     if (listening_s == INVALID_SOCKET)
     {
-        cerr << "couldn't create a socket." << endl;
+        std::cerr << "couldn't create a socket." << std::endl;
         exit(1);
     }  
     if (bind(listening_s, (sockaddr*)&addr, sizeof(addr)) < 0)  
     {
-        cerr << "Error binding socket." << endl;
+        std::cerr << "Error binding socket." << std::endl;
         exit(1);
     }
     //tell winsock the socket is for listening
     listen(listening_s, SOMAXCONN); // the socket is for listening, being able to listen to maximum amount.
-    cout << "Listening to incoming connections." << endl;
+    std::cout << "Listening to incoming connections." << std::endl;
 }
 void Server::accept_con()
 {
@@ -51,32 +49,44 @@ void Server::accept_con()
     {
         clientSize = sizeof(client_addr);
         connection_s = accept(listening_s, (sockaddr*)&client_addr, &clientSize); //puts the client info into addr.
-        cout << "Connection from " << "(" << inet_ntoa(client_addr.sin_addr) << " , " << ntohs(client_addr.sin_port) << ")" << endl; 
+        std::cout << "Connection from " << "(" << inet_ntoa(client_addr.sin_addr) << " , " << ntohs(client_addr.sin_port) << ")" << std::endl; 
         
         add_client(connection_s);
 
         if (connection_s == INVALID_SOCKET)
             break;
         
-        threads.emplace_back(thread(&Server::recieve_messages, this, connection_s)); //and the object itself, the third is the parameters but
+        threads.emplace_back(std::thread(&Server::recieve_messages, this, connection_s, clients.back())); //and the object itself, the third is the parameters but
                                                                               //there are none.
         threads.back().detach();
     }
 }
 void Server::add_client(SOCKET client)
 {   
-    clients.emplace_back(client); //emplace back
+    ClientInfo cl;
+    cl.con = client;
+    clients.emplace_back(cl); //emplace back
 }
-void Server::recieve_messages(SOCKET client)
+void Server::recieve_messages(SOCKET client, ClientInfo &cl)
 {
     char local_data[BUFF_SIZE];
-    ZeroMemory(local_data, BUFF_SIZE);
+    bool name = false;
 
     while (true)
     {
         if (recv(client, local_data, BUFF_SIZE, 0) <= 0)
             break;
-        cout << "message recieved: " << local_data << endl;
+        if (!name)
+        {
+            char* ptr;
+            char* ch = strchr(local_data, ':');
+            for (ptr = local_data; ptr != ch; ptr++)
+            {
+                const char* pptr = ptr;
+                strcat(cl.name, *pptr); //problems
+            }
+        }
+        std::cout << "message recieved: " << local_data << std::endl;
  
         if (strstr(local_data, "/exit"))
             break;
@@ -99,11 +109,11 @@ Server::~Server()
 
 void Server::broadcast_message(SOCKET& client, char* data)
 {
-    std::lock_guard<mutex> lock_guard(m);
+    std::lock_guard<std::mutex> lock_guard(m);
     for (auto c : clients)
     {
-        if (c != client)
-            send(c, data, BUFF_SIZE, 0); //instead of clients[i], use clients.at()
+        if (c.con != client)
+            send(c.con, data, BUFF_SIZE, 0); //instead of clients[i], use clients.at()
     }
 }
 void KeyListener(Server &s)
